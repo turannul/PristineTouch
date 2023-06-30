@@ -1,28 +1,35 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+## 
+##  build.sh
+##  PristineTouch
+##  Original author: github.com/gltchitm
+##  Recreated by Turann_ on 30.06.2023.
+##
 
-if [ -d build/KeyboardCleaner.app ]; then
-    rm -rf build/Keyboard\ Cleaner.app
-fi
+appname="PristineTouch"
+execname="pristinetouch"
+identifier="xyz.turannul.PristineTouch"
+version="1.0"
+###################################################
+buildpath="build/PristineTouch.app/Contents/MacOS"
+plistpath="build/PristineTouch.app/Contents/"
 
-mkdir -p build/Keyboard\ Cleaner.app/Contents
-mkdir build/Keyboard\ Cleaner.app/Contents/MacOS
+rm -rf build/
+mkdir -p $buildpath
 
-version=$(cat VERSION)
-build_id=$(uuidgen | sed y/ABCDEF/abcdef/)
-
-cat << EOF > build/Keyboard\ Cleaner.app/Contents/Info.plist
+cat << EOF > $plistpath/Info.plist
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Keyboard Cleaner</string>
+    <string>$appname</string>
     <key>CFBundleDisplayName</key>
-    <string>Keyboard Cleaner</string>
+    <string>$appname</string>
     <key>CFBundleExecutable</key>
-    <string>keyboard-cleaner</string>
+    <string>$execname</string>
     <key>CFBundleIdentifier</key>
-    <string>com.github.gltchitm.KeyboardCleaner</string>
+    <string>$identifier</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleVersion</key>
@@ -36,24 +43,9 @@ cat << EOF > build/Keyboard\ Cleaner.app/Contents/Info.plist
     <key>LSMinimumSystemVersion</key>
     <string>11.0</string>
     <key>LSUIElement</key>
-    <true />
+    <true/>
 </dict>
 </plist>
 EOF
 
-cat << EOF > build/Keyboard\ Cleaner.app/Contents/keyboard-cleaner-build.txt
-Keyboard Cleaner
-
-Version: $version
-Build ID: $build_id
-Built: $(date)
-EOF
-
-clang \
-    -framework Cocoa \
-    -o build/Keyboard\ Cleaner.app/Contents/MacOS/keyboard-cleaner \
-    src/main.m
-
-echo "Built Keyboard Cleaner!"
-echo "  Version: $version"
-echo "  Build ID: $build_id"
+clang -framework Cocoa -o $buildpath/$execname src/main.m src/AppDelegate.m && echo -e " Build successful: $version" || echo -e "Build failed!"
