@@ -48,4 +48,4 @@ cat << EOF > $plistpath/Info.plist
 </plist>
 EOF
 
-clang -framework Cocoa -o $buildpath/$execname src/main.m src/AppDelegate.m && echo -e " Build successful: $version" || echo -e "Build failed!"
+clang -v -framework Cocoa -o $buildpath/$execname src/main.m src/AppDelegate.m && echo -e " Build successful: $version" || echo -e "Build failed!"
