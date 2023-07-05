@@ -1,13 +1,12 @@
-
-Hide Menu bar???
 Disable Trackpad (and Touchbar) Gestures while app running?
+Design/Find a icon
 Improve code readability :: refactor later?
 
 
 
 
-2,3,4 I might need help.
-3-     
+1,2 I might need help.
+1-     
     NSGestureRecognizer *trackpadGestureRecognizer = [NSPanGestureRecognizer alloc];
     trackpadGestureRecognizer.allowedTouchTypes = @[@(NSTouchTypeDirect)];
     [trackpadGestureRecognizer setEnabled:NO];
@@ -16,6 +15,6 @@ Improve code readability :: refactor later?
     for (NSTouchBarItem *item in [[NSTouchBar builtInTouchBar] itemIdentifiers]) {
         if ([item isKindOfClass:[NSCustomTouchBarItem class]]) {
             NSCustomTouchBarItem *customItem = (NSCustomTouchBarItem *)item;
-            [customItem.view setGestureRecognizers:@[]];
+            [customItem.view setGestureRecognizers:@[]]; //:nil?
         }
     }

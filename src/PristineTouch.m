@@ -21,7 +21,8 @@
                                                       defer:NO];
         
         [self.window setTitle:@"PristineTouch"];
-        [self.window setLevel:NSFloatingWindowLevel];
+        [self.window setLevel:kCGMaximumWindowLevel];
+
         [self.window setCollectionBehavior:(NSWindowCollectionBehaviorStationary |
                                             NSWindowCollectionBehaviorIgnoresCycle |
                                             NSWindowCollectionBehaviorFullScreenAuxiliary)];
@@ -56,16 +57,6 @@
     }
     return self;
 }
-
-
-- (void)windowDidBecomeKey:(NSNotification *)notification {
-    [[NSApplication sharedApplication] setPresentationOptions:NSApplicationPresentationAutoHideMenuBar];
-    NSLog(@"[+] (Window) Im here ");
-     }
-- (void)applicationDidBecomeActive:(NSNotification *)notification  {
-    [[NSApplication sharedApplication] setPresentationOptions:NSApplicationPresentationAutoHideMenuBar];
-    NSLog(@"[+] (Application) Im here ");
-    }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
     if (![self hasAccessibilityAccess]) {
