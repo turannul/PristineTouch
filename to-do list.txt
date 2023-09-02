@@ -1,5 +1,6 @@
 Disable Trackpad (and Touchbar) Gestures while app running?
 Design/Find a icon
+Create a .dmg
 Improve code readability :: refactor later?
 
 
