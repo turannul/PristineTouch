@@ -61,6 +61,10 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
     if (![self hasAccessibilityAccess]) {
         [self displayAccessibilityAlert];
+        NSPanGestureRecognizer *trackpadGestureRecognizer = [[NSPanGestureRecognizer alloc] init];
+trackpadGestureRecognizer.allowedTouchTypes = @[ @(NSTouchTypeDirect) ];
+trackpadGestureRecognizer.enabled = NO;
+[[[NSApp mainWindow] contentView] addGestureRecognizer:trackpadGestureRecognizer];
         return;
     }
 
@@ -68,18 +72,17 @@
     NSOperatingSystemVersion osVersion = [[NSProcessInfo processInfo] operatingSystemVersion];
     NSString *OSXVer = [NSString stringWithFormat:@"%ld.%ld.%ld", (long)osVersion.majorVersion, (long)osVersion.minorVersion, (long)osVersion.patchVersion];
 
-    NSLog(@"[*] macOS: %@", OSXVer);
+    NSLog(@"[*] System Version %@", OSXVer);
 
     [self.window orderFront:nil];
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
     [NSCursor hide];
     [self blockHIDEvents];
-    //if (@available(macOS 10.13.0, *)) {self.window.touchBar = [self makeTouchBar];} /* That's not working :( */
 }
 
 - (BOOL)hasAccessibilityAccess {
     BOOL accessibilityAccess = AXIsProcessTrusted();
-    NSLog(@"[*] Accessibility perm: %d", accessibilityAccess);
+    if (accessibilityAccess == 1) {NSLog(@"[+] I have permission. :)");}else{NSLog(@"[-] I don't have permission. :(");};
     return accessibilityAccess;
 }
 
@@ -106,7 +109,7 @@
             NSURL *securityPrefsURL = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"];
             [[NSWorkspace sharedWorkspace] openURL:securityPrefsURL];
         } else if (returnCode == NSAlertSecondButtonReturn) {
-            NSLog(@"[-] Oops that's not supposed to happen, what now?\nAbort, abort :( )");
+            NSLog(@"[-] Oops that's not supposed to happen, what now?\nAbort, abort :(");
             exit(1);
         }
     }];
@@ -196,16 +199,5 @@ CGEventRef eventTapCallBack(CGEventTapProxy proxy, CGEventType type, CGEventRef 
     }
     return lockIcon;
 }
-/* 
-// Even i disabled touchbar (well i tried) if you have one 
-- (NSTouchBar *)makeTouchBar {
-    if (@available(macOS 10.13.0, *)) {
-        NSTouchBar *touchBar = [[NSTouchBar alloc] init];
-        touchBar.delegate = self;
-        touchBar.customizationIdentifier = @".CustomTouchBar";
-        touchBar.defaultItemIdentifiers = @[];
-        touchBar.principalItemIdentifier = nil;
-        return touchBar; } else { return nil; }}
-        */
 
 @end
