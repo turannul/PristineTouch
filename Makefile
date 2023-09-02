@@ -1,14 +1,14 @@
 appname := PristineTouch
 execname := pristinetouch
 identifier := xyz.turannul.PristineTouch
-version := 1.1.2
+version := 1.1.2-1
 execpath := build/PristineTouch.app/Contents/MacOS
 plistpath := build/PristineTouch.app/Contents/
 
 all: $(execpath)/$(execname)
 
 $(execpath)/$(execname): src/main.m src/PristineTouch.m
-	rm -rfv build/
+	rm -rf build/
 	mkdir -p $(execpath)
 	@printf '<?xml version="1.0" encoding="UTF-8"?>\n' > $(plistpath)/Info.plist
 	@printf '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n' >> $(plistpath)/Info.plist
