@@ -17,7 +17,7 @@
 - (BOOL)hasAccessibilityAccess;
 - (void)displayAccessibilityAlert;
 - (void)blockHIDEvents;
-- (NSString *)getModelIdentifier;
+- (NSString *)getMacmodel;
 - (NSImage *)determineLockIconForMacModel;
 
 @end
