@@ -74,7 +74,7 @@
 
 - (BOOL)hasAccessibilityAccess {
     BOOL accessibilityAccess = AXIsProcessTrusted();
-    NSLog(@"Accessibility permission is %@", accessibilityAccess ? @"available" : @"not available :(");
+    NSLog(@"Accessibility permission is %@", accessibilityAccess ? @"granted" : @"not granted :(");
     return accessibilityAccess;
 }
 
