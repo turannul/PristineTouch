@@ -2,7 +2,7 @@
 // PristineTouch.m
 // PristineTouch
 // Original author: github.com/gltchitm
-// Recreated by Turann_ on 30.06.2023.
+// Updated by Turann_ on 30.06.2023.
 //
 
 #import "PristineTouch.h"
@@ -16,9 +16,9 @@
         
         NSRect mainFrame = [[NSScreen mainScreen] frame];
         self.window = [[NSWindow alloc] initWithContentRect:mainFrame
-                                                  styleMask:NSWindowStyleMaskBorderless
-                                                    backing:NSBackingStoreBuffered
-                                                      defer:NO];
+                                                styleMask:NSWindowStyleMaskBorderless
+                                                backing:NSBackingStoreBuffered
+                                                defer:NO];
         
         [self.window setTitle:@"PristineTouch"];
         [self.window setLevel:kCGMaximumWindowLevel];
@@ -59,20 +59,12 @@
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
-    if (![self hasAccessibilityAccess]) {
-        [self displayAccessibilityAlert];
-        NSPanGestureRecognizer *trackpadGestureRecognizer = [[NSPanGestureRecognizer alloc] init];
-trackpadGestureRecognizer.allowedTouchTypes = @[ @(NSTouchTypeDirect) ];
-trackpadGestureRecognizer.enabled = NO;
-[[[NSApp mainWindow] contentView] addGestureRecognizer:trackpadGestureRecognizer];
-        return;
-    }
+    if (![self hasAccessibilityAccess]) { [self displayAccessibilityAlert]; }
 
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSOperatingSystemVersion osVersion = [[NSProcessInfo processInfo] operatingSystemVersion];
-    NSString *OSXVer = [NSString stringWithFormat:@"%ld.%ld.%ld", (long)osVersion.majorVersion, (long)osVersion.minorVersion, (long)osVersion.patchVersion];
-
-    NSLog(@"[*] System Version %@", OSXVer);
+    NSLog(@"Hello World, PristineTouch is running on macOS %ld.%ld.%ld",
+            [[NSProcessInfo processInfo] operatingSystemVersion].majorVersion,
+            [[NSProcessInfo processInfo] operatingSystemVersion].minorVersion,
+            [[NSProcessInfo processInfo] operatingSystemVersion].patchVersion);
 
     [self.window orderFront:nil];
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
@@ -82,7 +74,7 @@ trackpadGestureRecognizer.enabled = NO;
 
 - (BOOL)hasAccessibilityAccess {
     BOOL accessibilityAccess = AXIsProcessTrusted();
-    if (accessibilityAccess == 1) {NSLog(@"[+] I have permission. :)");}else{NSLog(@"[-] I don't have permission. :(");};
+    NSLog(@"Accessibility permission is %@", accessibilityAccess ? @"available" : @"not available :(");
     return accessibilityAccess;
 }
 
@@ -97,49 +89,60 @@ trackpadGestureRecognizer.enabled = NO;
     [self.window center];
     [NSCursor unhide];
 
-    NSAlert *alert = [[NSAlert alloc] init];
-    [alert setMessageText:@"Missing permission"];
-    [alert setInformativeText:@"Due to 'security' restrictions, you need to grant accessibility permission in order to block HID (Human Interface Devices) events."];
-    [alert addButtonWithTitle:@"Allow"];
-    [alert addButtonWithTitle:@"Cancel"];
-    [alert setAlertStyle:NSAlertStyleCritical];
-    [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode) {
+    NSAlert *AccessibilityMiss = [[NSAlert alloc] init];
+    [AccessibilityMiss setMessageText:@"Missing permission"];
+    [AccessibilityMiss setInformativeText:@"Because of security restrictions, Accessibility permission is required to restrict HID (Human Interface Device) events."];
+    [AccessibilityMiss addButtonWithTitle:@"Allow"];
+    [AccessibilityMiss addButtonWithTitle:@"Don't Allow - (Exit)"];
+    [AccessibilityMiss setAlertStyle:NSAlertStyleCritical];
+    [AccessibilityMiss beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode) {
         if (returnCode == NSAlertFirstButtonReturn) {
-            NSLog(@"[+] Someone allowed, :') ");
             NSURL *securityPrefsURL = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"];
             [[NSWorkspace sharedWorkspace] openURL:securityPrefsURL];
         } else if (returnCode == NSAlertSecondButtonReturn) {
-            NSLog(@"[-] Oops that's not supposed to happen, what now?\nAbort, abort :(");
-            exit(1);
+            exit(0);
         }
     }];
 }
 
-
-
 - (void)blockHIDEvents {
-    CGEventMask eventMask = CGEventMaskBit(kCGEventKeyDown) |
-                            CGEventMaskBit(kCGEventKeyUp) |
+    CGEventMask eventMask = CGEventMaskBit(kCGEventKeyDown) | CGEventMaskBit(kCGEventKeyUp) |
+                            // Keyboard Events; key pressed/released
                             CGEventMaskBit(kCGEventMouseMoved) |
-                            CGEventMaskBit(kCGEventLeftMouseDown) |
-                            CGEventMaskBit(kCGEventRightMouseDown) |
-                            CGEventMaskBit(kCGEventOtherMouseDown) |
-                            CGEventMaskBit(kCGEventLeftMouseUp) |
-                            CGEventMaskBit(kCGEventRightMouseUp) |
-                            CGEventMaskBit(kCGEventOtherMouseUp) |
+                            // Misc Mouse Events
+                            CGEventMaskBit(kCGEventLeftMouseDown) | CGEventMaskBit(kCGEventLeftMouseUp) | CGEventMaskBit(kCGEventLeftMouseDragged) |
+                            // Left Mouse Events
+                            CGEventMaskBit(kCGEventRightMouseDown) | CGEventMaskBit(kCGEventRightMouseUp) | CGEventMaskBit(kCGEventRightMouseDragged) |
+                            // Right Mouse Events
+                            CGEventMaskBit(kCGEventOtherMouseDown) | CGEventMaskBit(kCGEventOtherMouseUp) | CGEventMaskBit(kCGEventOtherMouseDragged) |
+                            // Other Mouse Events
                             CGEventMaskBit(kCGEventScrollWheel) |
+                            // Scroll Wheel Events
                             CGEventMaskBit(kCGEventFlagsChanged);
+                            // Modifier Key Changes = Shift, Control, Option, Command
+                            
 
     CFMachPortRef eventTap = CGEventTapCreate(kCGSessionEventTap,
-                                              kCGTailAppendEventTap,
-                                              kCGEventTapOptionDefault,
-                                              eventMask,
-                                              eventTapCallBack,
-                                              NULL);
+                                                kCGTailAppendEventTap,
+                                                kCGEventTapOptionDefault,
+                                                eventMask,
+                                                eventTapCallBack,
+                                                NULL);
 
     if (!eventTap) {
-        NSLog(@"[!] Failed to create event tap");
-        exit(1);
+        NSAlert *eventTapErr = [[NSAlert alloc] init];
+        NSString *ErrTitle = @"Critical Error - PristineTouch can't start.";
+        NSString *ErrMsg = @"Something went terribly wrong.\nIf this message appears frequently, please report it to github.com/turannul/PristineTouch.";
+
+        [eventTapErr setMessageText:ErrTitle];
+        [eventTapErr setInformativeText:ErrMsg];
+        [eventTapErr addButtonWithTitle:@"OK - Exit"];
+        [eventTapErr setAlertStyle:NSAlertStyleWarning];
+        [eventTapErr beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode) {
+            if (returnCode == NSAlertFirstButtonReturn) {
+                exit(420); // Now we have proper exit.
+            }
+        }];
     }
 
     CFRunLoopSourceRef runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0);
@@ -150,54 +153,51 @@ trackpadGestureRecognizer.enabled = NO;
 
 CGEventRef eventTapCallBack(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon) {
     if (type != kCGEventTapDisabledByTimeout && type != kCGEventTapDisabledByUserInput) {
+            NSLog(@"Event: %@", event);
+
+        // Ignore all events except exit shortcut
+        if (!(type == kCGEventKeyDown || type == kCGEventKeyUp) ||
+            !(CGEventGetFlags(event) & kCGEventFlagMaskCommand) ||
+            !(CGEventGetFlags(event) & kCGEventFlagMaskAlternate)) {
+            NSLog(@"Ignored: %@", event);
+            return NULL;
+        }
+
+        // Exit shortcut: command + option + Q = (⌘ + ⌥ + Q) <Q = 12>
         CGKeyCode keyCode = (CGKeyCode)CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
-
-        if (keyCode == 12 && // Hardcoded value for Q key
-            (CGEventGetFlags(event) & kCGEventFlagMaskCommand) &&
-            (CGEventGetFlags(event) & kCGEventFlagMaskAlternate)) {
-            exit(0); /* Exit when Cmd + Option + Q is pressed */
-        }
-
-        if (CGEventGetType(event) == kCGEventKeyDown || CGEventGetType(event) == kCGEventKeyUp) {
-            return NULL;  /* Ignore keyboard events */
-        }
+        if (keyCode == 12) { exit(0); }
     }
-
-    return event;
+    return event;  // Don't interrupt other event(s), that weren't explicitly ignored
 }
 
-- (NSString *)getModelIdentifier {
+- (NSString *)getMacmodel {
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath:@"/usr/sbin/sysctl"];
     [task setArguments:@[@"-n", @"hw.model"]];
-
     NSPipe *pipe = [NSPipe pipe];
     [task setStandardOutput:pipe];
-
     NSFileHandle *fileHandle = [pipe fileHandleForReading];
     [task launch];
-
     NSData *data = [fileHandle readDataToEndOfFile];
     NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     output = [output stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-
     return output;
 }
 
 - (NSImage *)determineLockIconForMacModel {
-    NSString *modelIdentifier = [self getModelIdentifier];
+  NSString *modelIdentifier = [self getMacmodel];
+  NSImage *lockIcon = nil;
 
-    NSImage *lockIcon = nil;
-    if ([modelIdentifier containsString:@"Book"]) /* Simple logic if contains "book" its a MacBook Pro/Air or Mac Mini if none true then its an iMac %100 */ {
-        lockIcon = [NSImage imageWithSystemSymbolName:@"lock.laptopcomputer" accessibilityDescription:@"No1readthis"];
-    } else if ([modelIdentifier containsString:@"Mini"]) {
-        lockIcon = [NSImage imageWithSystemSymbolName:@"lock.display" accessibilityDescription:@"No1readthis"];
-    } else if ([modelIdentifier containsString:@"iMac"]) {
-        lockIcon = [NSImage imageWithSystemSymbolName:@"lock.desktopcomputer" accessibilityDescription:@"No1readthis"];
+    if ([modelIdentifier hasPrefix:@"MacBook"]) {
+        lockIcon = [NSImage imageWithSystemSymbolName:@"lock.laptopcomputer" accessibilityDescription:@"MacBook"];
+    } else if ([modelIdentifier isEqualToString:@"Mac Mini"] || [modelIdentifier isEqualToString:@"Mac Studio"] || [modelIdentifier isEqualToString:@"Mac Pro"]) {
+        lockIcon = [NSImage imageWithSystemSymbolName:@"lock.display" accessibilityDescription:@"MacWexternalDisplay"];
+    } else if ([modelIdentifier hasPrefix:@"iMac"]) {
+        lockIcon = [NSImage imageWithSystemSymbolName:@"lock.desktopcomputer" accessibilityDescription:@"iMac"];
     } else {
-        lockIcon = [NSImage imageWithSystemSymbolName:@"lock.fill" accessibilityDescription:@"No1readthis"]; /* 4.th option if none above is true (which very unlikely unless a Mac Pro) it will show a generic lock icon. */
+        lockIcon = [NSImage imageWithSystemSymbolName:@"lock.fill" accessibilityDescription:@"GenericMac"];
     }
-    return lockIcon;
+return lockIcon;
 }
 
 @end
