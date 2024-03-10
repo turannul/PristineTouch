@@ -109,18 +109,13 @@
     CGEventMask eventMask = CGEventMaskBit(kCGEventKeyDown) | CGEventMaskBit(kCGEventKeyUp) |
                             // Keyboard Events; key pressed/released
                             CGEventMaskBit(kCGEventMouseMoved) |
-                            // Misc Mouse Events
+                            // Mouse Events; mouse moved/ keys pressed etc.
                             CGEventMaskBit(kCGEventLeftMouseDown) | CGEventMaskBit(kCGEventLeftMouseUp) | CGEventMaskBit(kCGEventLeftMouseDragged) |
-                            // Left Mouse Events
                             CGEventMaskBit(kCGEventRightMouseDown) | CGEventMaskBit(kCGEventRightMouseUp) | CGEventMaskBit(kCGEventRightMouseDragged) |
-                            // Right Mouse Events
                             CGEventMaskBit(kCGEventOtherMouseDown) | CGEventMaskBit(kCGEventOtherMouseUp) | CGEventMaskBit(kCGEventOtherMouseDragged) |
-                            // Other Mouse Events
                             CGEventMaskBit(kCGEventScrollWheel) |
-                            // Scroll Wheel Events
                             CGEventMaskBit(kCGEventFlagsChanged);
                             // Modifier Key Changes = Shift, Control, Option, Command
-                            
 
     CFMachPortRef eventTap = CGEventTapCreate(kCGSessionEventTap,
                                                 kCGTailAppendEventTap,
