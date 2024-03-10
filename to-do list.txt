@@ -1,21 +1,6 @@
-Disable Trackpad (and Touchbar) Gestures while app running?
+Disable Trackpad gestures (and Touchbar) while app running?
 Design/Find a icon
+Design better UI?
+Create preference to use custom background
 Create a .dmg
-Improve code readability :: refactor later?
-
-
-
-
-1,2 I might need help.
-1-     
-    NSGestureRecognizer *trackpadGestureRecognizer = [NSPanGestureRecognizer alloc];
-    trackpadGestureRecognizer.allowedTouchTypes = @[@(NSTouchTypeDirect)];
-    [trackpadGestureRecognizer setEnabled:NO];
-    [[NSApplication sharedApplication] addGestureRecognizer:trackpadGestureRecognizer];
-    
-    for (NSTouchBarItem *item in [[NSTouchBar builtInTouchBar] itemIdentifiers]) {
-        if ([item isKindOfClass:[NSCustomTouchBarItem class]]) {
-            NSCustomTouchBarItem *customItem = (NSCustomTouchBarItem *)item;
-            [customItem.view setGestureRecognizers:@[]]; //:nil?
-        }
-    }
+Improve code readability :: refactor later? // Made progress today; 10/3/24
