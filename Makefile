@@ -1,7 +1,7 @@
 appname := PristineTouch
 execname := pristinetouch
 identifier := xyz.turannul.PristineTouch
-version := 1.1.2-1
+version := 0.0.1 - (1)
 execpath := build/PristineTouch.app/Contents/MacOS
 plistpath := build/PristineTouch.app/Contents/
 
