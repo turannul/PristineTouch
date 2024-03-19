@@ -13,7 +13,13 @@
     self = [super init];
     if (self) {
         [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
-        
+        [self setWindow]; // Set up and create window
+        [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    }
+    return self;
+}
+
+- (void)setWindow {
         NSRect mainFrame = [[NSScreen mainScreen] frame];
         self.window = [[NSWindow alloc] initWithContentRect:mainFrame
                                                 styleMask:NSWindowStyleMaskBorderless
@@ -54,22 +60,21 @@
         
         [[self.window contentView] addSubview:lockIconView];
         [[self.window contentView] addSubview:deactivateLabel];
-    }
-    return self;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
-    if (![self hasAccessibilityAccess]) { [self displayAccessibilityAlert]; }
-
     NSLog(@"Hello World, PristineTouch is running on macOS %ld.%ld.%ld",
             [[NSProcessInfo processInfo] operatingSystemVersion].majorVersion,
             [[NSProcessInfo processInfo] operatingSystemVersion].minorVersion,
             [[NSProcessInfo processInfo] operatingSystemVersion].patchVersion);
 
-    [self.window orderFront:nil];
-    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-    [NSCursor hide];
-    [self blockHIDEvents];
+    if (![self hasAccessibilityAccess]){ 
+        [self.window orderOut:nil]; // Do not show window here.
+        [self displayAccessibilityAlert]; // Display alert
+    } else {
+        [self blockHIDEvents]; // Call blocking function (to start blocking HID events)
+        [self.window orderFrontRegardless]; // Show window
+    }
 }
 
 - (BOOL)hasAccessibilityAccess {
@@ -79,33 +84,35 @@
 }
 
 - (void)displayAccessibilityAlert {
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-    [self.window setBackgroundColor:[NSColor whiteColor]];
-    [self.window setHasShadow:TRUE];
-    [self.window setLevel:NSFloatingWindowLevel];
-    [self.window setContentSize:NSMakeSize(500, 500)];
-    [self.window setStyleMask:NSWindowStyleMaskTitled];
-    [self.window setCollectionBehavior:NSWindowCollectionBehaviorDefault];
-    [self.window center];
-    [NSCursor unhide];
+    NSAlert *accessibilityAlert = [[NSAlert alloc] init];
+    [accessibilityAlert setMessageText:@"Missing permission"];
+    [accessibilityAlert setInformativeText:@"Because of security restrictions, Accessibility permission is required to restrict HID (Human Interface Device) events."];
+    [accessibilityAlert addButtonWithTitle:@"Allow"];
+    [accessibilityAlert addButtonWithTitle:@"Don't Allow - (Quit the app)"];
+    [accessibilityAlert setAlertStyle:NSAlertStyleCritical];
 
-    NSAlert *AccessibilityMiss = [[NSAlert alloc] init];
-    [AccessibilityMiss setMessageText:@"Missing permission"];
-    [AccessibilityMiss setInformativeText:@"Because of security restrictions, Accessibility permission is required to restrict HID (Human Interface Device) events."];
-    [AccessibilityMiss addButtonWithTitle:@"Allow"];
-    [AccessibilityMiss addButtonWithTitle:@"Don't Allow - (Exit)"];
-    [AccessibilityMiss setAlertStyle:NSAlertStyleCritical];
-    [AccessibilityMiss beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode) {
-        if (returnCode == NSAlertFirstButtonReturn) {
-            NSURL *securityPrefsURL = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"];
-            [[NSWorkspace sharedWorkspace] openURL:securityPrefsURL];
-        } else if (returnCode == NSAlertSecondButtonReturn) {
-            exit(0);
-        }
-    }];
+    NSModalResponse response = [accessibilityAlert runModal];
+    if (response == NSAlertFirstButtonReturn) {
+        NSURL *securityPrefsURL = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"];
+        [[NSWorkspace sharedWorkspace] openURL:securityPrefsURL];
+    } else if (response == NSAlertSecondButtonReturn) {
+        exit(0);
+    }
+}
+
+-(void)displayEventError {
+    NSAlert *eventTapErr = [[NSAlert alloc] init];
+    [eventTapErr setMessageText:@"Critical Error - PristineTouch can't start."];
+    [eventTapErr setInformativeText:@"Something went terribly wrong.\nIf this message appears frequently, please report it at github.com/turannul/PristineTouch."];
+    [eventTapErr addButtonWithTitle:@"Quit the app"];
+    [eventTapErr setAlertStyle:NSAlertStyleCritical];
+
+    NSModalResponse response = [eventTapErr runModal];
+        if (response == NSAlertFirstButtonReturn) { exit(420); }
 }
 
 - (void)blockHIDEvents {
+    [NSCursor hide]; // Hide the cursor while block running.
     CGEventMask eventMask = CGEventMaskBit(kCGEventKeyDown) | CGEventMaskBit(kCGEventKeyUp) |
                             // Keyboard Events; key pressed/released
                             CGEventMaskBit(kCGEventMouseMoved) |
@@ -124,21 +131,7 @@
                                                 eventTapCallBack,
                                                 NULL);
 
-    if (!eventTap) {
-        NSAlert *eventTapErr = [[NSAlert alloc] init];
-        NSString *ErrTitle = @"Critical Error - PristineTouch can't start.";
-        NSString *ErrMsg = @"Something went terribly wrong.\nIf this message appears frequently, please report it to github.com/turannul/PristineTouch.";
-
-        [eventTapErr setMessageText:ErrTitle];
-        [eventTapErr setInformativeText:ErrMsg];
-        [eventTapErr addButtonWithTitle:@"OK - Exit"];
-        [eventTapErr setAlertStyle:NSAlertStyleWarning];
-        [eventTapErr beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode) {
-            if (returnCode == NSAlertFirstButtonReturn) {
-                exit(420); // Now we have proper exit.
-            }
-        }];
-    }
+    if (!eventTap) { [self displayEventError]; } // Handling (very rare) error, where eventTap has null.
 
     CFRunLoopSourceRef runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0);
     CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopCommonModes);
