@@ -72,34 +72,10 @@
         [self displayAccessibilityAlert]; // Display alert
     } else {
         [self blockHIDEvents]; // Call blocking function (to start blocking HID events)
-        if ([self hasTouchBar]) {
-        NSTouchBar *touchBar = [self makeTouchBar];
-        if (touchBar) {
-            NSView *contentView = [[NSView alloc] initWithFrame:self.window.frame];
-            [contentView addSubview:(NSView *)touchBar];  // Cast touchBar to NSView
-            [self.window setContentView:contentView];
-            }
-        }
+        [self.window makeKeyAndOrderFront:nil];
     }
 }
 
-- (NSTouchBar *)makeTouchBar {
-  NSTouchBar *touchBar = [[NSTouchBar alloc] init];
-  touchBar.delegate = self; // Set delegate (optional but recommended)
-    touchBar.customizationIdentifier = @"xyz.turannul.pristinetouch-emptytouchbar";
-
-  NSCustomTouchBarItem *emptyItem = [[NSCustomTouchBarItem alloc] initWithIdentifier:@"xyz.turannul.pristinetouch-emptytouchbar.view"];
-  NSView *customView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 100, 30)]; // Adjust frame size as needed
-    customView.wantsLayer = YES;
-    customView.layer.backgroundColor = [NSColor blueColor].CGColor;  // Access CGColor property
-
-    emptyItem.view = customView;
-
-    touchBar.defaultItemIdentifiers = @[emptyItem.identifier];
-    touchBar.customizationAllowedItemIdentifiers = @[emptyItem.identifier];
-
-    return touchBar;
-}
 
 - (BOOL)hasAccessibilityAccess {
     BOOL accessibilityAccess = AXIsProcessTrusted();
