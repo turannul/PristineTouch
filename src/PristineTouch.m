@@ -63,10 +63,14 @@
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
-    NSLog(@"Hello World, PristineTouch is running on macOS %ld.%ld.%ld",
-            [[NSProcessInfo processInfo] operatingSystemVersion].majorVersion,
-            [[NSProcessInfo processInfo] operatingSystemVersion].minorVersion,
-            [[NSProcessInfo processInfo] operatingSystemVersion].patchVersion);
+    NSString *minorVersionStr = [[NSProcessInfo processInfo] operatingSystemVersion].minorVersion == 0 ? @"" : [NSString stringWithFormat:@".%ld", [[NSProcessInfo processInfo] operatingSystemVersion].minorVersion];
+    NSString *patchVersionStr = [[NSProcessInfo processInfo] operatingSystemVersion].patchVersion == 0 ? @"" : [NSString stringWithFormat:@".%ld", [[NSProcessInfo processInfo] operatingSystemVersion].patchVersion];
+
+    NSLog(@"Hello World, PristineTouch is running on macOS %ld%@%@",
+        [[NSProcessInfo processInfo] operatingSystemVersion].majorVersion,
+        minorVersionStr,
+        patchVersionStr);
+
     if (![self hasAccessibilityAccess]){ 
         [self.window orderOut:nil]; // Do not show window here.
         [self displayAccessibilityAlert]; // Display alert
