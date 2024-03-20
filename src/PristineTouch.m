@@ -9,6 +9,8 @@
 
 @implementation PristineTouch
 
+BOOL Dbg_mode = NO; // Enables extra debug messages.
+
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -75,15 +77,16 @@
         [self.window orderOut:nil]; // Do not show window here.
         [self displayAccessibilityAlert]; // Display alert
     } else {
-        [self blockHIDEvents]; // Call blocking function (to start blocking HID events)
         [self.window makeKeyAndOrderFront:nil];
+        [self blockHIDEvents]; // Call blocking function (to start blocking HID events)
+        [self hasTouchBar];
     }
 }
 
 
 - (BOOL)hasAccessibilityAccess {
     BOOL accessibilityAccess = AXIsProcessTrusted();
-    NSLog(@"Accessibility permission is %@", accessibilityAccess ? @"granted" : @"not granted :(");
+    Dbg_mode ? NSLog(@"Accessibility permission is %@", accessibilityAccess ? @"granted" : @"not granted :(") : nil;
     return accessibilityAccess;
 }
 
@@ -99,7 +102,7 @@
     NSData *data = [[pipe fileHandleForReading] readDataToEndOfFile]; // Read the output
     NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]; // Convert the output to a NSString
     BOOL serverRunning = (output.length > 0); // Check if the output is not empty
-    NSLog(@"The TouchBar is %@.", serverRunning ? @"available" : @"not available"); // Print the result
+    Dbg_mode ? NSLog(@"This Mac %@ TouchBar.", serverRunning ? @"does have" : @"doesn't have") : nil;
     return serverRunning; // Return the result
 }
 
@@ -161,13 +164,13 @@
 
 CGEventRef eventTapCallBack(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon) {
     if (type != kCGEventTapDisabledByTimeout && type != kCGEventTapDisabledByUserInput) {
-            NSLog(@"Event: %@", event);
+            Dbg_mode ? NSLog(@"Event: %@", event) : nil;
 
         // Ignore all events except exit shortcut
         if (!(type == kCGEventKeyDown || type == kCGEventKeyUp) ||
             !(CGEventGetFlags(event) & kCGEventFlagMaskCommand) ||
             !(CGEventGetFlags(event) & kCGEventFlagMaskAlternate)) {
-            NSLog(@"Ignored: %@", event);
+            Dbg_mode ? NSLog(@"Ignored: %@", event) : nil;
             return NULL;
         }
 
