@@ -14,6 +14,7 @@
 @property (strong) NSWindowController *preferencesWindowController;
 
 - (BOOL)hasAccessibilityAccess;
+- (BOOL)hasTouchBar;
 - (void)displayAccessibilityAlert;
 - (void)displayEventError;
 - (void)blockHIDEvents;
