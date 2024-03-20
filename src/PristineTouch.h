@@ -16,7 +16,10 @@
 
 - (BOOL)hasAccessibilityAccess;
 - (void)displayAccessibilityAlert;
+- (void)displayEventError;
 - (void)blockHIDEvents;
+- (void)setWindow;
+- (NSTouchBar *)makeTouchBar;
 - (NSString *)getMacmodel;
 - (NSImage *)determineLockIconForMacModel;
 
