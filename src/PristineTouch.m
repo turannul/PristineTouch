@@ -13,13 +13,13 @@
     self = [super init];
     if (self) {
         [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
-        [self setWindow]; // Set up and create window
+        [self setUpWindow]; // Set up and create window
         [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
     }
     return self;
 }
 
-- (void)setWindow {
+- (void)setUpWindow {
         NSRect mainFrame = [[NSScreen mainScreen] frame];
         self.window = [[NSWindow alloc] initWithContentRect:mainFrame
                                                 styleMask:NSWindowStyleMaskBorderless
@@ -67,20 +67,60 @@
             [[NSProcessInfo processInfo] operatingSystemVersion].majorVersion,
             [[NSProcessInfo processInfo] operatingSystemVersion].minorVersion,
             [[NSProcessInfo processInfo] operatingSystemVersion].patchVersion);
-
     if (![self hasAccessibilityAccess]){ 
         [self.window orderOut:nil]; // Do not show window here.
         [self displayAccessibilityAlert]; // Display alert
     } else {
         [self blockHIDEvents]; // Call blocking function (to start blocking HID events)
-        [self.window orderFrontRegardless]; // Show window
+        if ([self hasTouchBar]) {
+        NSTouchBar *touchBar = [self makeTouchBar];
+        if (touchBar) {
+            NSView *contentView = [[NSView alloc] initWithFrame:self.window.frame];
+            [contentView addSubview:(NSView *)touchBar];  // Cast touchBar to NSView
+            [self.window setContentView:contentView];
+            }
+        }
     }
+}
+
+- (NSTouchBar *)makeTouchBar {
+  NSTouchBar *touchBar = [[NSTouchBar alloc] init];
+  touchBar.delegate = self; // Set delegate (optional but recommended)
+    touchBar.customizationIdentifier = @"xyz.turannul.pristinetouch-emptytouchbar";
+
+  NSCustomTouchBarItem *emptyItem = [[NSCustomTouchBarItem alloc] initWithIdentifier:@"xyz.turannul.pristinetouch-emptytouchbar.view"];
+  NSView *customView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 100, 30)]; // Adjust frame size as needed
+    customView.wantsLayer = YES;
+    customView.layer.backgroundColor = [NSColor blueColor].CGColor;  // Access CGColor property
+
+    emptyItem.view = customView;
+
+    touchBar.defaultItemIdentifiers = @[emptyItem.identifier];
+    touchBar.customizationAllowedItemIdentifiers = @[emptyItem.identifier];
+
+    return touchBar;
 }
 
 - (BOOL)hasAccessibilityAccess {
     BOOL accessibilityAccess = AXIsProcessTrusted();
     NSLog(@"Accessibility permission is %@", accessibilityAccess ? @"granted" : @"not granted :(");
     return accessibilityAccess;
+}
+
+- (BOOL)hasTouchBar {
+    NSTask *tbJob = [[NSTask alloc] init];
+    [tbJob setLaunchPath:@"/usr/bin/pgrep"]; // pgrep is a command line utility that searches for processes by name
+    // Note: If TouchBarServer process is active/running on the machine (very likely *I don't know simulators do use it*) has a TouchBar. Said likely for a reason checking for hardware is little bit complicated, and details not relevant to this program. - Work smarter, not harder.
+    [tbJob setArguments:@[@"TouchBarServer"]]; // Search for "TouchBarServer"
+    NSPipe *pipe = [NSPipe pipe]; // Create a pipe to read the output
+    [tbJob setStandardOutput:pipe]; // Set the standard output to the pipe
+    [tbJob launch]; // Launch the task
+    [tbJob waitUntilExit]; // Wait for the task to finish
+    NSData *data = [[pipe fileHandleForReading] readDataToEndOfFile]; // Read the output
+    NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]; // Convert the output to a NSString
+    BOOL serverRunning = (output.length > 0); // Check if the output is not empty
+    NSLog(@"The TouchBar is %@.", serverRunning ? @"available" : @"not available"); // Print the result
+    return serverRunning; // Return the result
 }
 
 - (void)displayAccessibilityAlert {
@@ -158,14 +198,14 @@ CGEventRef eventTapCallBack(CGEventTapProxy proxy, CGEventType type, CGEventRef 
     return event;  // Don't interrupt other event(s), that weren't explicitly ignored
 }
 
-- (NSString *)getMacmodel {
-    NSTask *task = [[NSTask alloc] init];
-    [task setLaunchPath:@"/usr/sbin/sysctl"];
-    [task setArguments:@[@"-n", @"hw.model"]];
+- (NSString *)getMacModel {
+    NSTask *cmd = [[NSTask alloc] init];
+    [cmd setLaunchPath:@"/usr/sbin/sysctl"];
+    [cmd setArguments:@[@"-n", @"hw.model"]];
     NSPipe *pipe = [NSPipe pipe];
-    [task setStandardOutput:pipe];
+    [cmd setStandardOutput:pipe];
     NSFileHandle *fileHandle = [pipe fileHandleForReading];
-    [task launch];
+    [cmd launch];
     NSData *data = [fileHandle readDataToEndOfFile];
     NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     output = [output stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
@@ -173,7 +213,7 @@ CGEventRef eventTapCallBack(CGEventTapProxy proxy, CGEventType type, CGEventRef 
 }
 
 - (NSImage *)determineLockIconForMacModel {
-  NSString *modelIdentifier = [self getMacmodel];
+  NSString *modelIdentifier = [self getMacModel];
   NSImage *lockIcon = nil;
 
     if ([modelIdentifier hasPrefix:@"MacBook"]) {

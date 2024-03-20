@@ -8,9 +8,8 @@
 #import <Cocoa/Cocoa.h>
 #import <ApplicationServices/ApplicationServices.h>
 
-@interface PristineTouch : NSObject <NSApplicationDelegate>
+@interface PristineTouch : NSWindowController <NSApplicationDelegate, NSTouchBarDelegate>
 
-@property (strong, nonatomic) NSWindow *window;
 @property (strong) NSStatusItem *statusItem;
 @property (strong) NSWindowController *preferencesWindowController;
 
@@ -18,9 +17,9 @@
 - (void)displayAccessibilityAlert;
 - (void)displayEventError;
 - (void)blockHIDEvents;
-- (void)setWindow;
+- (void)setUpWindow;
 - (NSTouchBar *)makeTouchBar;
-- (NSString *)getMacmodel;
+- (NSString *)getMacModel;
 - (NSImage *)determineLockIconForMacModel;
 
 @end
