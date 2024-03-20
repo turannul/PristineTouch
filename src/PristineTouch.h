@@ -18,7 +18,6 @@
 - (void)displayEventError;
 - (void)blockHIDEvents;
 - (void)setUpWindow;
-- (NSTouchBar *)makeTouchBar;
 - (NSString *)getMacModel;
 - (NSImage *)determineLockIconForMacModel;
 
