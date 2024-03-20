@@ -1,6 +1,6 @@
 appname := PristineTouch
 execname := pristinetouch
-identifier := xyz.turannul.PristineTouch
+identifier := xyz.turannul.pristinetouch
 version := 0.0.1 - (1)
 execpath := build/PristineTouch.app/Contents/MacOS
 plistpath := build/PristineTouch.app/Contents/
@@ -8,7 +8,7 @@ plistpath := build/PristineTouch.app/Contents/
 all: $(execpath)/$(execname)
 
 $(execpath)/$(execname): src/main.m src/PristineTouch.m
-	rm -rf build/
+	rm -rfv build/PristineTouch.app/Contents/MacOS/pristinetouch
 	mkdir -p $(execpath)
 	@printf '<?xml version="1.0" encoding="UTF-8"?>\n' > $(plistpath)/Info.plist
 	@printf '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n' >> $(plistpath)/Info.plist
@@ -41,4 +41,4 @@ $(execpath)/$(execname): src/main.m src/PristineTouch.m
 	@clang -framework Cocoa -framework IOKit -o $(execpath)/$(execname) src/main.m src/PristineTouch.m && printf "Build successful: $(version)\n" || printf "Build failed!\n"
 
 c:
-	rm -rf build/
+	rm -rfv build/PristineTouch.app/Contents/MacOS/pristinetouch
