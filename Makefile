@@ -1,3 +1,8 @@
+#
+# Makefile.mk
+# PristineTouch
+# Created by Turann_ on 30.06.2023.
+#
 appname := PristineTouch
 execname := pristinetouch
 identifier := xyz.turannul.pristinetouch

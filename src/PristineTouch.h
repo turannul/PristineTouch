@@ -2,8 +2,8 @@
 // PristineTouch.h
 // PristineTouch
 // Original author: github.com/gltchitm
-// Recreated by Turann_ on 30.06.2023.
-//
+// Updated by Turann_ on 30.06.2023.
+
 
 #import <Cocoa/Cocoa.h>
 #import <ApplicationServices/ApplicationServices.h>

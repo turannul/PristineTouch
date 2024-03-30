@@ -9,7 +9,7 @@
 
 @implementation PristineTouch
 
-BOOL Dbg_mode = NO; // Enables extra debug messages.
+BOOL Dbg_mode = NO; // note - This is enables extra debug messages.
 
 - (instancetype)init {
     self = [super init];
@@ -65,13 +65,13 @@ BOOL Dbg_mode = NO; // Enables extra debug messages.
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
+    NSString *macModel = [self getMacModel];
+    NSString *majorVersionStr = [[NSProcessInfo processInfo] operatingSystemVersion].majorVersion == 0 ? @"" : [NSString stringWithFormat:@"%ld", [[NSProcessInfo processInfo] operatingSystemVersion].majorVersion];
     NSString *minorVersionStr = [[NSProcessInfo processInfo] operatingSystemVersion].minorVersion == 0 ? @"" : [NSString stringWithFormat:@".%ld", [[NSProcessInfo processInfo] operatingSystemVersion].minorVersion];
     NSString *patchVersionStr = [[NSProcessInfo processInfo] operatingSystemVersion].patchVersion == 0 ? @"" : [NSString stringWithFormat:@".%ld", [[NSProcessInfo processInfo] operatingSystemVersion].patchVersion];
 
-    NSLog(@"Hello World, PristineTouch is running on macOS %ld%@%@",
-        [[NSProcessInfo processInfo] operatingSystemVersion].majorVersion,
-        minorVersionStr,
-        patchVersionStr);
+    NSLog(@"Hello World, PristineTouch is running on %@ macOS %@%@%@", macModel, majorVersionStr, minorVersionStr, patchVersionStr);
+
 
     if (![self hasAccessibilityAccess]){ 
         [self.window orderOut:nil]; // Do not show window here.
@@ -110,8 +110,8 @@ BOOL Dbg_mode = NO; // Enables extra debug messages.
     NSAlert *accessibilityAlert = [[NSAlert alloc] init];
     [accessibilityAlert setMessageText:@"Missing permission"];
     [accessibilityAlert setInformativeText:@"Because of security restrictions, Accessibility permission is required to restrict HID (Human Interface Device) events."];
-    [accessibilityAlert addButtonWithTitle:@"Allow"];
-    [accessibilityAlert addButtonWithTitle:@"Don't Allow - (Quit the app)"];
+    [accessibilityAlert addButtonWithTitle:@"Open Settings"];
+    [accessibilityAlert addButtonWithTitle:@"Exit"];
     [accessibilityAlert setAlertStyle:NSAlertStyleCritical];
 
     NSModalResponse response = [accessibilityAlert runModal];
@@ -127,7 +127,7 @@ BOOL Dbg_mode = NO; // Enables extra debug messages.
     NSAlert *eventTapErr = [[NSAlert alloc] init];
     [eventTapErr setMessageText:@"Critical Error - PristineTouch can't start."];
     [eventTapErr setInformativeText:@"Something went terribly wrong.\nIf this message appears frequently, please report it at github.com/turannul/PristineTouch."];
-    [eventTapErr addButtonWithTitle:@"Quit the app"];
+    [eventTapErr addButtonWithTitle:@"Exit"];
     [eventTapErr setAlertStyle:NSAlertStyleCritical];
 
     NSModalResponse response = [eventTapErr runModal];
